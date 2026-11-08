@@ -78,9 +78,16 @@ const packedMessages = Object.entries(messages).map(([locale, dict]) => [locale,
 // Replace only profitable phrases with unused private-use characters, then
 // restore them before exposing dictionaries. All translations round-trip below.
 const phraseCounts = new Map()
+const addPhrase = phrase => phraseCounts.set(phrase, (phraseCounts.get(phrase) ?? 0) + 1)
 for (const value of Object.values(messages).flatMap(Object.values)) {
   for (const match of value.matchAll(/[A-Za-z][A-Za-z0-9'-]{2,}/g)) {
-    phraseCounts.set(match[0], (phraseCounts.get(match[0]) ?? 0) + 1)
+    const word = match[0], before = value[match.index - 1] === ' ', after = value[match.index + word.length] === ' '
+    addPhrase(word)
+    // Include spaces that already exist in the translation. Packing common word
+    // boundaries saves bytes without changing a single displayed character.
+    if (before) addPhrase(' ' + word)
+    if (after) addPhrase(word + ' ')
+    if (before && after) addPhrase(' ' + word + ' ')
   }
   const words = [...value.matchAll(/[A-Za-z][A-Za-z0-9'-]*(?: [A-Za-z][A-Za-z0-9'-]*)+/g)]
   for (const match of words) {

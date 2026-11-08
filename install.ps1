@@ -8,13 +8,13 @@
   Desktop 使用自带的 dsh 命令和 pnpm；先启动一次并完全退出 Desktop，再传入 -Profile desktop。
    本 fork 未发布 npm，所有 Profile 都安装固定 Git tag（无 Git 时使用 tarball）。
   需要装其它 rev 时用 -Rev 参数覆盖(如 CI 冒烟装被测提交):
-    - git 源固定到 tag:  github:lius-2573/dsh-cost-meter#v1.9.61-ollama.1
+    - git 源固定到 tag:  github:lius-2573/dsh-cost-meter#v1.9.62-ollama.1
    - 无 git 时用 tag 打包直链(内容与 tag 一一对应)
    - pnpm 固定版本:     11.21.0(corepack prepare / npm i -g pnpm@11.21.0)
   已安装时重跑本脚本即可对齐到当前脚本固定的版本。
 
   一键用法(复制整行到 PowerShell 粘贴回车;先审阅再运行):
-    irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.61-ollama.1/install.ps1 | iex
+    irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.62-ollama.1/install.ps1 | iex
 
   手动用法(先下载本文件审阅):
     powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
@@ -33,7 +33,7 @@ $ErrorActionPreference = 'Stop'
 $Package      = 'dsh-cost-meter'
 $Owner        = 'lius-2573'
 $Repo         = 'dsh-cost-meter'
-$PinnedRev    = 'v1.9.61-ollama.1'   # 固定 fork tag，未发布到 npm。
+$PinnedRev    = 'v1.9.62-ollama.1'   # 固定 fork tag，未发布到 npm。
 $InstallRev   = if ($Rev) { $Rev } else { $PinnedRev }
 $PnpmVersion  = '11.21.0'   # 固定 pnpm 版本,保证安装链可复现
 $GitSpec = "github:$Owner/$Repo#$InstallRev"

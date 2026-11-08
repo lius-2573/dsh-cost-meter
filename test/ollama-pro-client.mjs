@@ -22,7 +22,7 @@ const source = readdirSync(clientDir).filter(name => name.endsWith('.js')).sort(
 const expose = [
   'CODING_PLAN_ROWS', 'parseConfig', 'parseState', 'makeT', 'resolveLocale',
   'formatMoneyUsd', 'billingClassOfLocal', 'planProviderIdOfLocal',
-  'renderSidebarFooter', 'QuotaStrip', 'QuotaCard', 'useQuotaRefresh', 'MiniMaxPlanCard',
+  'renderSidebarFooter', 'CodingPlanBox', 'QuotaStrip', 'QuotaCard', 'useQuotaRefresh', 'MiniMaxPlanCard',
   'barDirectionOf', 'quotaWindowRow', 'codingPlanWindowLabel', 'codingPlanWindowEntries',
   'numInput', 'CredentialField', 'quotaPlacementValue', 'quotaPlacementPatch', 'quotaPlacementOptions',
 ]
@@ -297,6 +297,36 @@ const sidebarCard = byProp(footer, 'data-cm-plan', 'ollama-cloud')
 assert.ok(sidebarCard, '侧边栏出现 ollama-cloud 卡片')
 assert.match(text(sidebarCard), /25%/, '月度已用百分比来自 windows.monthly')
 assert.match(text(sidebarCard), /Ollama/)
+assert.match(text(sidebarCard), /本月额度: \$100/, '侧边栏同时显示官方月度上限，不只有百分比')
+
+// 月度上限是 included.allowanceUsd，不是余额、已用或购买余额，亦不固定为 $60。
+const renderSidebar = (configPatch = {}, livePatch = {}, wide = true, id = 'ollama-cloud') => expand(renderComponent(ui.CodingPlanBox, {
+  id, wide, state: { ...fullState, config: { ...sidebarConfig, ...configPatch }, codingPlans: { [id]: { ...live, ...livePatch } } },
+}))
+const allowancePatch = value => ({ ollama: { ...live.ollama, included: { ...live.ollama.included, allowanceUsd: value } } })
+const quotaLine = tree => nodes(tree).find(node => node.props?.className === 'cm-mm-reset')
+const usdSidebar = renderSidebar({}, allowancePatch(60))
+assert.equal(text(quotaLine(usdSidebar)), '本月额度: $60')
+assert.match(text(usdSidebar), /25%/, '新增金额不改变百分比口径')
+assert.equal(text(quotaLine(renderSidebar({ currency: 'CNY', symbol: '¥', exchangeRate: 7 }, allowancePatch(60)))), '本月额度: ¥420', '跟随显示币种与汇率')
+assert.equal(text(quotaLine(renderSidebar({ locale: 'en' }, allowancePatch(60)))), 'Monthly quota: $60')
+assert.equal(text(quotaLine(renderSidebar({}, allowancePatch(80)))), '本月额度: $80', '不能硬编码 Pro 额度')
+assert.equal(text(quotaLine(renderSidebar({}, allowancePatch(0)))), '本月额度: $0', '零上限仍有效')
+for (const value of [undefined, null, -1, NaN, Infinity, '60']) {
+  const invalid = renderSidebar({}, allowancePatch(value))
+  assert.equal(quotaLine(invalid), undefined, '缺失或非法上限不编造金额: ' + String(value))
+  assert.doesNotMatch(text(invalid), /NaN|Infinity|\$60/)
+}
+assert.equal(quotaLine(renderSidebar({}, { ollama: undefined })), undefined, '兼容尚无账户明细的快照')
+assert.equal(quotaLine(renderSidebar({}, {}, true, 'anthropic')), undefined, '其他厂商不增加月度金额行')
+assert.equal(quotaLine(renderSidebar({}, { status: 'error', message: 'HTTP 503' })), undefined, '不把失败快照的上限显示成新数据')
+for (const configPatch of [{ planQuotaStyle: 'gauge' }, { sidebarTextOnly: true }, { barDirections: { plan: 'remaining' } }]) {
+  assert.equal(text(quotaLine(renderSidebar(configPatch, allowancePatch(60)))), '本月额度: $60', '仪表盘／纯文本／剩余方向均保留上限')
+}
+const rail = renderSidebar({}, allowancePatch(60), false)
+assert.equal(quotaLine(rail), undefined, '窄栏仍保持紧凑')
+assert.match(text(rail.props.label), /本月额度: \$60/, '窄栏悬停提示保留上限')
+assert.match(text(usdSidebar.props.label), /本月额度: \$60/, '宽栏悬停提示与可见金额一致')
 const placeholderState = { ...sidebarState, codingPlans: { 'ollama-cloud': { ...live, status: 'off', windows: {}, ollama: undefined } } }
 assert.match(text(expand(ui.renderSidebarFooter(placeholderState, true))), /未查询额度/, '无数据时保留占位与重试入口')
 
@@ -311,4 +341,4 @@ assert.ok(chip, '输入区出现 ollama-cloud chip')
 assert.match(text(chip), /ollama/i)
 assert.match(text(chip), /25%/)
 
-console.log('[ok] ollama-cloud client: vendor row, zh/en, .ollama pass-through, detail figures, zero/missing, stale warning, settings, sidebar and composer')
+console.log('[ok] ollama-cloud client: vendor row, zh/en, .ollama pass-through, detail figures, zero/missing, stale warning, settings, sidebar monthly allowance (USD/CNY) and composer')

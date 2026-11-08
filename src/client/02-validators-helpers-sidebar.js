@@ -3075,6 +3075,10 @@
       // 窗口文本只装数值,标题行自己补「余额:」标签。textWindowOf 只产非空文本,真值检查即可。
       const titleValue = (id === 'workbuddy' || id === 'opendesign') && windows.balance?.text
         ? t('codingPlanWindowBalance') + ': ' + windows.balance.text : null
+      // 官方月度上限与已用百分比分开展示，金额跟随费用币种；不硬编码 Pro 的 $60。
+      const allowance = id === 'ollama-cloud' ? live.ollama?.included?.allowanceUsd : null
+      const monthlyQuota = Number.isFinite(allowance) && allowance >= 0
+        ? t('cornerGoMonthly') + ': ' + formatMoneyUsd(allowance, state.config) : null
       const locale = resolveLocale(state.config)
       const rows = (titleValue ? entries.filter(([name]) => name !== 'balance') : entries).map(([name, win]) => {
         const pct = pctOf(win)
@@ -3100,6 +3104,7 @@
           : quotaValueText(simpleBarByDirection(pct, planDirection).label, planDirection, t)
         return codingPlanWindowLabel(name, t) + ' ' + value + (reset ? ' · ' + reset : '')
       })
+      if (monthlyQuota) detailParts.unshift(monthlyQuota)
       if (live.fetchedAt > 0) detailParts.push(t('goQuotaFetchedAt', { time: new Date(live.fetchedAt).toLocaleTimeString() }))
       if (live.message) detailParts.push(live.message)
       detailParts.push(...clickRefreshTipLines(t, refresh))
@@ -3118,6 +3123,7 @@
               el('div', { className: titleValue ? 'cm-mm-title cm-mm-row wide' : 'cm-mm-title' },
                 t(rowDef.labelKey),
                 titleValue && el('span', { className: 'cm-mm-text' }, titleValue)),
+              monthlyQuota && el('div', { className: 'cm-mm-reset' }, monthlyQuota),
               el(gauge ? 'div' : Fragment, gauge ? { className: 'cm-plan-gauges' } : null, ...rows))))
     }
 

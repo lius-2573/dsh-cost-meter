@@ -16,6 +16,7 @@ Key 不写入账本、仓库或浏览器状态，只有宿主向固定的 `https
 ## 展示口径
 
 - 月度总额、剩余额度、购买余额和重置日期来自 [Balance](https://docs.ollama.com/api/balance.md)。已用额度由“总额 − 剩余”计算；总额为零时不编造百分比。
+- 侧边栏在百分比之外显示“本月额度”上限，例如 `$60`；选择人民币时按当前汇率显示对应金额。额度来自官方返回值，不固定写死为 60，不包含购买余额；窄栏可在悬停提示中查看。
 - 近 24 小时、7 天、30 天的金额、请求与 Token 来自 [Cloud usage](https://docs.ollama.com/api/cloud-usage.md)。这些是官方窗口，不等于本地自然日／自然月，界面可查看实际起止时间；统计可能有更新延迟。
 - 官方账户统计可包含其他工具调用；不是当前 DSH 会话账单，不重复写入本地费用、不变更既有 API / Plan 分类。
 - 缺失字段或失败窗口显示不可用，而不是零。临时失败保留上次成功余额与原始查询时间，提示数据可能过期；密钥更换、来源停用时清除旧账户缓存。
@@ -26,7 +27,7 @@ Key 不写入账本、仓库或浏览器状态，只有宿主向固定的 `https
 Fork tag 推送后，可固定安装：
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.61-ollama.1
+dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.62-ollama.1
 ```
 
 也可以通过 DSH 官方 CLI 安装经测试的本地 `.tgz` 包。安装后重启 DSH，并刷新原 GUI。恢复官方版本时使用 `dsh plugin --profile web add dsh-cost-meter@1.9.60`，再重启、刷新；必要时使用安装前的本地快照恢复配置，勿清空会话或账本。

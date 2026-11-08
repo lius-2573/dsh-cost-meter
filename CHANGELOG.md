@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.62-ollama.1] - 2026-11-09
+
+- Ollama 侧边栏在百分比之外显示官方“本月额度”上限，跟随当前显示币种及汇率换算；不硬编码 $60，不包含购买余额。
+- 窄栏悬停提示保留月度上限；兼容仪表盘、进度条、纯文本及剩余额度方向，其他厂商不变。
+- 改进构建期文案无损压缩，在保持全部双语文字不变的前提下为主客户端释放空间。
+- Show Ollama's official monthly allowance alongside sidebar percentages in the display currency. Keep the allowance in narrow-sidebar tooltips and preserve other providers. Improve lossless build-time dictionary packing without changing translations.
+
 ## [1.9.61-ollama.1] - 2026-11-08
 
 - Fork 增加新版 Ollama Pro 月度套餐额度、购买余额、重置日期，以及近 24h / 7d / 30d 官方费用与 Token 用量。
