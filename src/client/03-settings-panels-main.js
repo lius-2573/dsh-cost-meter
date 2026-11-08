@@ -1379,6 +1379,7 @@
       { id: 'baidu-coding', labelKey: 'codingPlanBaidu' },
       { id: 'workbuddy', labelKey: 'wbT' },
       { id: 'factory', labelKey: 'codingPlanFactory' },
+      { id: 'ollama-cloud', labelKey: 'codingPlanOllama' },
     ]
 
     /** 单个 Coding Plan 订阅卡片(11 家共用:开关在标题行,展示/间隔/计划额度/凭据收在展开区)。 */

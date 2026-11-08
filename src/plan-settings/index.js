@@ -76,9 +76,74 @@ window.__ModuleLoader__.load({ id: 'dsh-cost-meter', chunk: 'client.plan-setting
         el('p', { className: 'cm-note' }, text('从首次成功查询开始记录；充值或赠送不计为减少，积分过期可能计入减少。不是官方扣费账单，积分不折算成人民币。', 'Recorded from the first successful query. Grants are not decreases; expiry may be. This is not an official charge statement and credits are not converted to currency.')),
         el('p', { className: 'cm-note' }, text('全部 WorkBuddy 调用 API 等值：今日 ', 'API-equivalent value of all WorkBuddy calls: today ') + formatMoneyUsd(equiv(state.today), state.config) + text('；累计 ', '; total ') + formatMoneyUsd(equiv(state.total), state.config) + text('。调用记录没有账号标识，此项不随账号筛选。', '. Call records have no account identifiers; this value is not filtered by account.')))
     }
+    /** Token 数简写(与 02 的 formatTokens 同规则;本 chunk 独立加载,复制一份避免主产物传参)。 */
+    function compactTokens(value) {
+      const v = Math.max(0, Number(value) || 0)
+      const scaled = x => x >= 100 ? String(Math.round(x)) : String(Math.round(x * 10) / 10)
+      if (v < 1000) return String(Math.round(v))
+      if (v >= 999500) return scaled(v / 1000000) + 'M'
+      return v < 1000000 ? scaled(v / 1000) + 'K' : scaled(v / 1000000) + 'M'
+    }
+
+    /**
+     * Ollama Cloud / Ollama Pro 账户明细(新版月度额度)。
+     * 只读 state.codingPlans['ollama-cloud'].ollama,与 DSH 会话账本分开展示;
+     * 所有金额走 formatMoneyUsd(state.config),缺失显示 —,0 照常显示。
+     * 旧版 session/weekly 窗口不在这里解析:契约只提供 windows.monthly。
+     */
+    function OllamaCloudDetail(props) {
+      const { detail, live, state } = props
+      const text = (zh, en) => resolveLocale(state.config) === 'en' ? en : zh
+      const number = value => typeof value === 'number' && Number.isFinite(value) ? value : null
+      const money = value => number(value) === null ? '—' : formatMoneyUsd(number(value), state.config)
+      const included = detail.included !== null && typeof detail.included === 'object' && !Array.isArray(detail.included) ? detail.included : {}
+      const allowance = number(included.allowanceUsd), balance = number(included.balanceUsd)
+      // balanceUsd = 剩余额度;总额和剩余都有效时才推导已用,不把缺失当 0。
+      // 官方可能调整 allowance,余额大于总额时按 0 已用处理。
+      const used = allowance !== null && balance !== null ? Math.max(0, allowance - balance) : null
+      const windows = live.windows !== null && typeof live.windows === 'object' ? live.windows : {}
+      const resetValue = typeof windows.monthly?.resetsAt === 'string' && windows.monthly.resetsAt.length > 0 ? windows.monthly.resetsAt : included.periodUntil
+      const resetAt = typeof resetValue === 'string' && Number.isFinite(new Date(resetValue).getTime()) ? new Date(resetValue).toLocaleString() : '—'
+      const usage = detail.usage !== null && typeof detail.usage === 'object' && !Array.isArray(detail.usage) ? detail.usage : {}
+      const cell = (label, value, sub, title) => el('div', { title, style: { padding: 8, borderRadius: 6, background: 'var(--dsw-alias-bg-layer-1)', minWidth: 0, overflowWrap: 'anywhere' } },
+        el('small', null, label), el('strong', { style: { display: 'block' } }, value),
+        sub ? el('small', { style: { display: 'block', opacity: .65 } }, sub) : null)
+      const usageCell = (range, label) => {
+        const row = usage[range] !== null && typeof usage[range] === 'object' && !Array.isArray(usage[range]) ? usage[range] : null
+        const tokens = row === null ? [] : [['inputTokens', text('输入 ', 'In ')], ['cachedInputTokens', text('缓存 ', 'Cached ')], ['outputTokens', text('输出 ', 'Out ')]]
+          .filter(([field]) => number(row[field]) !== null)
+          .map(([field, prefix]) => prefix + compactTokens(number(row[field])))
+        const count = row === null ? null : number(row.requestCount)
+        const requests = count === null ? '—' : text(count.toLocaleString() + ' 次请求', count.toLocaleString() + ' requests')
+        // 24h/7d/30d 是官方滚动窗口,不是自然日;悬停给出实际 from/until 边界。
+        const boundary = value => typeof value === 'string' && Number.isFinite(new Date(value).getTime()) ? new Date(value).toLocaleString() : '—'
+        const bounds = row === null ? '—' : boundary(row.from) + ' – ' + boundary(row.until)
+        const title = text('统计区间：' + bounds + '（滚动窗口）', 'Range: ' + bounds + ' (rolling window)')
+        return cell(label, row === null ? '—' : money(row.usageUsd), (tokens.length > 0 ? tokens.join(' · ') : '—') + ' · ' + requests, title)
+      }
+      return el('section', { 'data-cm-ollama': 'detail', style: { display: 'grid', gap: 10, minWidth: 0 } },
+        el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8 } },
+          cell(text('月度总额', 'Monthly allowance'), money(allowance)),
+          cell(text('已用', 'Used'), money(used)),
+          cell(text('剩余', 'Remaining'), money(balance)),
+          cell(text('购买余额', 'Purchased balance'), money(detail.purchasedBalanceUsd)),
+          cell(text('重置日期', 'Reset date'), resetAt)),
+        el('div', null,
+          el('small', { style: { display: 'block', marginBottom: 6, color: 'var(--dsw-alias-label-tertiary)' } },
+            text('账户用量（近 24h / 近 7d / 近 30d，滚动窗口）', 'Account usage (last 24h / 7d / 30d, rolling windows)')),
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } },
+            usageCell('24h', text('近 24h', 'Last 24h')), usageCell('7d', text('近 7d', 'Last 7d')), usageCell('30d', text('近 30d', 'Last 30d')))),
+        detail.usageUnavailable === true ? el('p', { className: 'cm-note' },
+          text('该账户暂不提供用量区间，余额仍可查看。', 'Usage ranges are unavailable for this account; balances are still available.')) : null,
+        el('p', { className: 'cm-note' },
+          text('官方账户数据可能有更新延迟；这里显示 Ollama Cloud 账户的额度与用量，不是 DSH 会话实际扣款。仅支持新版 Ollama Pro 月度额度。',
+            'Official account data may lag. These are Ollama Cloud account balances and usage, not DSH session charges. New Ollama Pro monthly quota only.')))
+    }
+
     function PlanQuotaCard(props) {
       const { state, api, t, draft, setDraft, planId, labelKey } = props
       const config = state.config
+      const text = (zh, en) => resolveLocale(config) === 'en' ? en : zh
       const plansState = state.codingPlans ?? {}
       const cfgEntry = draft?.codingPlans?.[planId] ?? config.codingPlans?.[planId] ?? {}
       const live = plansState[planId] ?? { status: 'off', message: '', fetchedAt: 0, windows: {} }
@@ -90,7 +155,10 @@ window.__ModuleLoader__.load({ id: 'dsh-cost-meter', chunk: 'client.plan-setting
       const setPlan = (field, value) => {
         if (draft === null) return
         const base = draft.codingPlans ?? config.codingPlans ?? {}
-        setDraft({ ...draft, codingPlans: { ...base, [planId]: { ...(base[planId] ?? {}), [field]: value } } })
+        const next = { ...(base[planId] ?? {}), [field]: value }
+        // 首版默认 5 分钟:旧配置没有该字段时,开启动作一并写入,避免客户端回退 15。
+        if (planId === 'ollama-cloud' && field === 'enabled' && value === true && !(next.refreshMinutes > 0)) next.refreshMinutes = 5
+        setDraft({ ...draft, codingPlans: { ...base, [planId]: next } })
       }
       // 千问抵扣率编辑(#103):三项未填齐时保留本地草稿,完整后才自动保存。
       // 空行属于编辑状态,不能放进自动保存的 rates:服务端会清除空费率。
@@ -125,6 +193,9 @@ window.__ModuleLoader__.load({ id: 'dsh-cost-meter', chunk: 'client.plan-setting
         setDraft({ ...draft, codingPlans: { ...base, qwen: { ...(base.qwen ?? {}), rates: current } } })
       }
       const windows = live.windows !== null && typeof live.windows === 'object' ? live.windows : {}
+      const ollamaDetail = planId === 'ollama-cloud' && live.ollama !== null && typeof live.ollama === 'object' && !Array.isArray(live.ollama) ? live.ollama : null
+      const ollamaNode = ollamaDetail === null ? null : el(OllamaCloudDetail, { detail: ollamaDetail, live, state, t })
+      const staleTime = live.fetchedAt > 0 ? new Date(live.fetchedAt).toLocaleString() : '—'
       const statusNode = enabled === false
         ? el('p', { className: 'cm-note' }, (resolveLocale(state.config) === 'en' ? 'Disabled. Enable it to query this vendor\'s coding plan quota on the refresh interval and show it here.' : '未启用。开启后将按刷新间隔查询该厂商的 coding plan 额度并显示在这里。'))
         : live.status === 'ok'
@@ -141,12 +212,19 @@ window.__ModuleLoader__.load({ id: 'dsh-cost-meter', chunk: 'client.plan-setting
                   direction: barDirectionOf(config, 'plan'),
                 })
                 : codingPlanWindowEntries(windows, planId).map(([name, win]) => quotaWindowRow(t, codingPlanWindowLabel(name, t), win, barDirectionOf(config, 'plan'), false, name)))
-              : el('div', { className: 'cm-bal-line' }, t('codingPlanNotQueried')),
+              : ollamaNode ? null : el('div', { className: 'cm-bal-line' }, t('codingPlanNotQueried')),
+            ollamaNode,
             el('div', { className: 'cm-go-time' }, t('goQuotaFetchedAt', {
               time: live.fetchedAt > 0 ? new Date(live.fetchedAt).toLocaleTimeString() : '—',
             })))
           : live.status === 'error'
-            ? el('div', { className: 'cm-bal-line err' }, live.message || t('unknownError'))
+            ? el(Fragment, null,
+              el('div', { className: 'cm-bal-line err' }, live.message || t('unknownError')),
+              // 失败时宿主可能仍保留上次成功的数据:保留展示并明确标注可能已过期。
+              ollamaNode ? el('p', { className: 'cm-bal-line warn', role: 'status' },
+                text('额度查询失败，以下为上次成功获取的数据（' + staleTime + '），可能已过期。',
+                  'The quota query failed; the following is the last successful data (' + staleTime + ') and may be stale.')) : null,
+              ollamaNode)
             : live.status === 'off' && live.message
               ? el('p', { className: 'cm-note' }, live.message)
               : el('div', { className: 'cm-bal-line' }, t('codingPlanNotQueried'))
@@ -198,9 +276,12 @@ window.__ModuleLoader__.load({ id: 'dsh-cost-meter', chunk: 'client.plan-setting
         // 本地估算无缓存间隔；千问 CLI 使用可配置的查询间隔。
         planId !== 'scnet' && (planId !== 'qwen' || (cfgEntry.quotaSource ?? 'local') !== 'local') ? el('div', { className: 'cm-field' },
           el('label', null, t('codingPlanRefreshIntervalLabel')),
-          numInput({ value: typeof cfgEntry.refreshMinutes === 'number' && Number.isFinite(cfgEntry.refreshMinutes) && cfgEntry.refreshMinutes > 0 ? cfgEntry.refreshMinutes : 15 }, v => {
+          numInput({ value: typeof cfgEntry.refreshMinutes === 'number' && Number.isFinite(cfgEntry.refreshMinutes) && cfgEntry.refreshMinutes > 0 ? cfgEntry.refreshMinutes : planId === 'ollama-cloud' ? 5 : 15 }, v => {
             setPlan('refreshMinutes', Math.min(1440, Math.max(1, Math.floor(v))))
           })) : null,
+        planId === 'ollama-cloud' ? el('p', { className: 'cm-note' },
+          text('为避免触发官方限流，同一账户的结果至少缓存 1 分钟；官方返回 Retry-After 时按更长时间等待，期间手动刷新可能返回上次结果。',
+            'To avoid rate limits, results for one account are cached for at least 1 minute. When the provider sends Retry-After the wait is longer, so a manual refresh may return the previous result.')) : null,
         planId === 'scnet' || (planId === 'qwen' && (cfgEntry.quotaSource ?? 'local') === 'local')
           ? el(Fragment, null,
             el('div', { className: 'cm-field' },
@@ -279,13 +360,27 @@ window.__ModuleLoader__.load({ id: 'dsh-cost-meter', chunk: 'client.plan-setting
             : el(Fragment, null,
               el('div', { className: 'cm-field' },
                 el('label', null, planId === 'baidu-coding' ? 'Cookie (console.bce.baidu.com)' : planId === 'mimo' ? 'Cookie (platform.xiaomimimo.com)' : planId === 'factory' ? 'Factory Token' : planId === 'opendesign' ? 'OpenDesign Cookie / Control Key' : t('codingPlanKeyLabel'))),
-              el(AccountCredentialField, { state, draft, setDraft,
-                target: 'codingPlans.' + planId,
-                configured: live.keyConfigured === true,
-                source: live.keySource,
-                t, api,
-                placeholder: planId === 'baidu-coding' ? 'BAIDU_QIANFAN_COOKIE' : planId === 'mimo' ? 'api-platform_serviceToken=…; userId=…' : planId === 'factory' ? 'FACTORY_API_KEY' : planId === 'opendesign' ? 'Cookie: name=value; … / vela_ctrl_…' : 'sk-…',
-              }),
+              // Ollama Cloud 是单账号来源(不在 QUERY_ACCOUNT_SOURCES 中):必须直接用
+              // CredentialField,不能经 AccountCredentialField 追加 @default,否则宿主
+              // queryAccountTarget 会拒绝该 target,密钥保存失败。
+              planId === 'ollama-cloud'
+                ? el(CredentialField, {
+                  target: 'codingPlans.ollama-cloud',
+                  configured: live.keyConfigured === true,
+                  source: live.keySource,
+                  t, api,
+                  placeholder: 'OLLAMA_API_KEY',
+                })
+                : el(AccountCredentialField, { state, draft, setDraft,
+                  target: 'codingPlans.' + planId,
+                  configured: live.keyConfigured === true,
+                  source: live.keySource,
+                  t, api,
+                  placeholder: planId === 'baidu-coding' ? 'BAIDU_QIANFAN_COOKIE' : planId === 'mimo' ? 'api-platform_serviceToken=…; userId=…' : planId === 'factory' ? 'FACTORY_API_KEY' : planId === 'opendesign' ? 'Cookie: name=value; … / vela_ctrl_…' : 'sk-…',
+                }),
+              planId === 'ollama-cloud' ? el('p', { className: 'cm-note' },
+                text('API Key 也可通过环境变量 OLLAMA_API_KEY 或 DSH 凭据库提供。仅用于查询 Ollama Cloud 账户额度，不影响本地 Ollama 推理。',
+                  'The API key can also come from OLLAMA_API_KEY or the DSH credential store. It is only used to query the Ollama Cloud account and never affects local Ollama inference.')) : null,
               planId === 'baidu-coding' ? el('p', { className: 'cm-note' }, resolveLocale(state.config) === 'en'
                 ? 'Sign in at console.bce.baidu.com, open Token Plan → browser Network → tokenPlanPersonal/resource, and copy the full Cookie request header. Supports Personal credits and Tokens; excludes add-on packs. API keys cannot query quotas.'
                 : '登录 console.bce.baidu.com，打开 Token Plan 页面，在浏览器网络面板找到 tokenPlanPersonal/resource，复制完整 Cookie 请求头。支持个人版积分制与 Token 制套餐，不含加油包；API Key 不用于额度查询。') : null))

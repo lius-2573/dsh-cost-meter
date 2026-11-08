@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.9.61-ollama.1] - 2026-11-08
+
+- Fork 增加新版 Ollama Pro 月度套餐额度、购买余额、重置日期，以及近 24h / 7d / 30d 官方费用与 Token 用量。
+- 复用 DSH 凭据库、额度显示设置与币种换算；请求仅发送到 Ollama 官方 HTTPS 端点，拒绝重定向。
+- 失败时保留上次成功余额及真实查询时间；刷新遵守一分钟最短间隔和 Retry-After。旧版 session/weekly 套餐不在本次范围。
+- 账户用量仅用于展示，不写入会话账本、不改变本地 Ollama 或云端现有计费归类。
+- Add new Ollama Pro monthly credits, purchased balance, reset dates, and official 24h / 7d / 30d account usage. Keep credentials private, preserve last-good results, respect rate limits, and leave session billing unchanged. Legacy plans are not supported by this fork addition.
+
+[说明 / Guide](docs/ollama-pro.md) · [English](docs/ollama-pro.en.md)
+
 ## [1.9.60] - 2026-11-08
 
 - 新增可选“本地节省”卡片：按渠道 ID 前缀统计本地模型 Token，用选定的 DeepSeek 参考模型与固定价格档位折算今日、本周、本月和累计金额，展开查看各模型。默认关闭。

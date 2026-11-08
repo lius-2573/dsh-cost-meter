@@ -3,7 +3,7 @@
 <p align="center">Cost tracking and subscription quotas for DeepSeek Harness</p>
 
 <p align="center">
-  <a href="https://github.com/Han-1413141/dsh-cost-meter/releases/latest"><img src="https://img.shields.io/badge/version-1.9.60-4176E6?style=flat-square" alt="version"></a>
+  <a href="https://github.com/lius-2573/dsh-cost-meter/tree/v1.9.61-ollama.1"><img src="https://img.shields.io/badge/version-1.9.61--ollama.1-4176E6?style=flat-square" alt="version"></a>
   <a href="https://www.npmjs.com/package/dsh-cost-meter"><img src="https://img.shields.io/npm/dm/dsh-cost-meter?label=downloads&style=flat-square&color=4176E6" alt="npm monthly downloads"></a>
   <a href="https://github.com/Han-1413141/dsh-cost-meter/stargazers"><img src="https://img.shields.io/github/stars/Han-1413141/dsh-cost-meter?label=stars&style=flat-square&color=D9A400" alt="GitHub stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT license"></a>
@@ -13,6 +13,8 @@
 <p align="center"><a href="#installation">Install</a> · <a href="#feature-overview">Features</a> · <a href="#screenshots--walkthrough">Screenshots</a> · <a href="#documentation">Docs</a> · <a href="#community">Community</a></p>
 
 Track costs and tokens by conversation, model and call. View account balances, subscription quotas and budgets together, with separate API charges and Plan equivalents, multi-provider pricing, peak/off-peak alerts, and configurable sidebar and composer displays.
+
+This fork adds **new Ollama Pro monthly-credit plans** to upstream v1.9.60. See the [Ollama guide](docs/ollama-pro.en.md). It is not published to npm; installing the official npm package removes this addition.
 
 <p align="center">
   <img src="docs/promo.en.png" alt="Whale-themed project illustration" width="1280">
@@ -24,7 +26,7 @@ Track costs and tokens by conversation, model and call. View account balances, s
 Requires **Node.js ≥ 20, DSH 0.2.0 or later**, and pnpm available to DSH. See [host compatibility](docs/host-compatibility.md).
 
 ```sh
-dsh plugin --profile web add dsh-cost-meter
+dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.61-ollama.1
 ```
 
 Restart `dsh web` after installation or updates. **Desktop** uses its bundled CLI and the `desktop` profile; follow the [Desktop guide](docs/install-troubleshooting.md#desktop-安装与更新).
@@ -35,20 +37,20 @@ Restart `dsh web` after installation or updates. **Desktop** uses its bundled CL
 The PowerShell installer checks pnpm and Git and uses the `web` profile by default:
 
 ```powershell
-irm https://raw.githubusercontent.com/Han-1413141/dsh-cost-meter/v1.9.60/install.ps1 | iex
+irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.61-ollama.1/install.ps1 | iex
 ```
 
 Install a pinned Git tag:
 
 ```sh
-dsh plugin --profile web add github:Han-1413141/dsh-cost-meter#v1.9.60
+dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.61-ollama.1
 ```
 
 See [installation and updates](docs/install.en.md) for uninstalling or installing without Git.
 
 </details>
 
-Current release **v1.9.60**: [release notes](docs/update-notes-1.9.60.md#english) · [troubleshooting](docs/install-troubleshooting.md)
+Fork version **v1.9.61-ollama.1**, based on upstream v1.9.60: [Ollama guide](docs/ollama-pro.en.md) · [troubleshooting](docs/install-troubleshooting.md). Git installation requires the fork tag to have been pushed.
 
 ## Feature overview
 

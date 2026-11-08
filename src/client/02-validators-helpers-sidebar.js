@@ -473,6 +473,8 @@
             .filter(([, s]) => s !== null && typeof s === 'object')
             .map(([name, s]) => [name, { configured: s.configured === true, source: typeof s.source === 'string' ? s.source : '' }]))
           : {},
+        // Ollama Cloud 的账户明细随额度快照透传(state.codingPlans['ollama-cloud'].ollama);
+        // 这里不做字段裁剪,卡片自行按契约容错,缺失值显示 — 而不是 0。
         codingPlans: v.codingPlans !== null && typeof v.codingPlans === 'object' && !Array.isArray(v.codingPlans) ? v.codingPlans : {},
         // Token Plan 统计(issue #64):宽容解析,缺失/畸形回落 null(UI 隐藏面板)。
         planStats: parsePlanStats(v.planStats),
@@ -1277,7 +1279,7 @@
       mimo: ['mimo', 'xiaomimimo', 'mimo-token-plan', 'xiaomi-token-plan', 'xiaomi-token-plan-cn', 'xiaomi-token-plan-sgp', 'xiaomi-token-plan-ams'],
       factory: ['factory', 'droid', 'factory-a', 'factory-g', 'factory-o'],
     }
-    const PLAN_PROVIDER_IDS_LOCAL = ['opendesign', 'anthropic', 'zai', 'minimax', 'kimi', 'openrouter', 'siliconflow', 'commandcode', 'clinepass', 'scnet', 'volcengine', 'qwen', 'mimo', 'factory', 'go', 'codex', 'volcengine-agent', 'tencent-coding', 'tencent-token', 'baidu-coding', 'workbuddy', 'antigravity', 'stepfun']
+    const PLAN_PROVIDER_IDS_LOCAL = ['opendesign', 'anthropic', 'zai', 'minimax', 'kimi', 'openrouter', 'siliconflow', 'commandcode', 'clinepass', 'scnet', 'volcengine', 'qwen', 'mimo', 'factory', 'go', 'codex', 'volcengine-agent', 'tencent-coding', 'tencent-token', 'baidu-coding', 'workbuddy', 'antigravity', 'stepfun', 'ollama-cloud']
     const PLAN_NAME_HINTS_LOCAL = {
       opendesign: 'opendesign|open[._-]?design',
       codex: 'codex|chatgpt', 'baidu-coding': 'baidu|qianfan|百度|千帆',
@@ -1370,6 +1372,10 @@
       if (planId === 'go' && /^(?:llm-)?(?:dsh-opencode-go|opencode-go(?:-plus)?)$/i.test(String(provider).trim())) return 'plan'
       if (planId === 'kimi' && /^(?:llm-)?kimi-coding(?:-plan)?$/i.test(String(provider).trim())) return 'plan'
       if (planId === 'minimax' && /^(?:llm-)?minimax-(?:m-?plan|token-plan)$/i.test(String(provider).trim())) return 'plan'
+      // 默认计费类别(与 lib/plan-billing.js 的 DEFAULT_PLAN_PROVIDER_CLASS 同步):
+      // 查询 Ollama Cloud 账户额度不应把按量计费的 ollama-cloud 调用变成订阅。
+      // 显式 providers/models 归类已在上方提前返回,这里只兜默认值。
+      if (planId === 'ollama-cloud') return 'api'
       return enabledPlanSetOfLocal(config).has(planId) ? 'plan' : 'api'
     }
     /**

@@ -1122,6 +1122,7 @@ await assert.rejects(queryCodingPlan('nobody', 'sk-x', 'zh', stubT), error => er
 
 // 5.6) 端点白名单全部为官方域名(凭据安全)。
 const officialHosts = {
+  'ollama-cloud': ['ollama.com'],
   opendesign: ['amr-api.open-design.ai'],
   factory: ['api.factory.ai'],
   anthropic: ['api.anthropic.com'],
@@ -6906,6 +6907,9 @@ await import('./session-list-costs.mjs')
 await import('./balance-credentials.mjs')
 await import('./account-balance.mjs')
 await import('./factory-quota.mjs')
+await import('./ollama-pro.mjs')
+await import('./ollama-pro-host.mjs')
+await import('./ollama-pro-client.mjs')
 await import('./qwen-cli.mjs')
 await import('./bailian-cli.mjs')
 await import('./minimax-endpoint.mjs')

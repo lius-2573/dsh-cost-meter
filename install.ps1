@@ -6,15 +6,15 @@
 .DESCRIPTION
   无需克隆仓库:经 dsh plugin 把插件装进指定 Profile，默认 web。
   Desktop 使用自带的 dsh 命令和 pnpm；先启动一次并完全退出 Desktop，再传入 -Profile desktop。
-  Desktop 默认安装与 $PinnedRev 对应的 npm 正式版；其他 Profile 固定到发布 tag。
+   本 fork 未发布 npm，所有 Profile 都安装固定 Git tag（无 Git 时使用 tarball）。
   需要装其它 rev 时用 -Rev 参数覆盖(如 CI 冒烟装被测提交):
-   - git 源固定到 tag:  github:Han-1413141/dsh-cost-meter#v1.9.60
+    - git 源固定到 tag:  github:lius-2573/dsh-cost-meter#v1.9.61-ollama.1
    - 无 git 时用 tag 打包直链(内容与 tag 一一对应)
    - pnpm 固定版本:     11.21.0(corepack prepare / npm i -g pnpm@11.21.0)
   已安装时重跑本脚本即可对齐到当前脚本固定的版本。
 
   一键用法(复制整行到 PowerShell 粘贴回车;先审阅再运行):
-    irm https://raw.githubusercontent.com/Han-1413141/dsh-cost-meter/v1.9.60/install.ps1 | iex
+    irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.61-ollama.1/install.ps1 | iex
 
   手动用法(先下载本文件审阅):
     powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
@@ -31,9 +31,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $Package      = 'dsh-cost-meter'
-$Owner        = 'Han-1413141'
+$Owner        = 'lius-2573'
 $Repo         = 'dsh-cost-meter'
-$PinnedRev    = 'v1.9.60'   # 固定发布 tag:发布新版本时同步更新此值与 README 中的安装行
+$PinnedRev    = 'v1.9.61-ollama.1'   # 固定 fork tag，未发布到 npm。
 $InstallRev   = if ($Rev) { $Rev } else { $PinnedRev }
 $PnpmVersion  = '11.21.0'   # 固定 pnpm 版本,保证安装链可复现
 $GitSpec = "github:$Owner/$Repo#$InstallRev"
@@ -78,13 +78,13 @@ if ($Profile -ne 'desktop' -and -not (Has 'pnpm')) {
   Ok "pnpm 就绪: $((Get-Command pnpm).Source)"
 }
 
-# 2. Desktop 正式版使用明确的 npm 包名，重复安装仍能被宿主管理器识别。
-# 显式 -Rev 和其他 Profile 保留 Git / tarball 来源，供固定提交验证使用。
+# 2. 此 fork 未发布 npm；全部 Profile 固定安装 Git / tarball 来源。
+# 显式 -Rev 可指定被测 commit 或 fork tag。
 $useGit = Has 'git'
 if (-not $useGit -and ($Profile -ne 'desktop' -or $Rev)) {
   Info "未检测到 git,改用 GitHub 发布包($InstallRev 打包直链)安装"
 }
-$spec = if ($Profile -eq 'desktop' -and -not $Rev) { "$Package@$($PinnedRev.TrimStart('v'))" } elseif ($useGit) { $GitSpec } else { $TarSpec }
+$spec = if ($useGit) { $GitSpec } else { $TarSpec }
 
 # 3. 探测是否已装(profile 的 dependencies 里已有本包)
 $dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFILE '.dsh' }
