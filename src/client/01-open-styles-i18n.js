@@ -383,6 +383,8 @@ window.__ModuleLoader__.load({
       '.cm-footer-stack.text-only:not(.rail) .cm-mm>.cm-mm-title,.cm-footer-stack.text-only:not(.rail) .cm-codex-head,.cm-footer-stack.text-only:not(.rail) .cm-mm-reset{flex:1 0 100%;min-width:0}',
       '.cm-footer-stack.text-only:not(.rail) .cm-mm-row:not(.cm-mm-title){gap:4px;padding:0;min-width:0;max-width:100%}',
       '.cm-footer-stack.text-only .cm-mm-row .cm-bbox-label{max-width:115px;flex:0 1 auto}.cm-footer-stack.text-only .cm-mm-row .cm-bbox-pct{min-width:0}',
+      // Ollama 纯文字卡片：百分比居左、月度上限居右，共用标题下的一行。
+      '.text-only:not(.rail) .cm-mm[data-cm-plan=ollama-cloud]{display:grid;grid-template-columns:minmax(0,1fr) auto}.text-only [data-cm-plan=ollama-cloud]>.cm-mm-title{grid-column:1/-1}.text-only [data-cm-plan=ollama-cloud]>.cm-mm-reset{grid-area:2/2;justify-self:end;text-align:right}.text-only [data-cm-plan=ollama-cloud]>.cm-mm-row{grid-row:2;justify-self:start}',
       '@media (max-width:640px){.cm-cards{grid-template-columns:1fr}.cm-grid{grid-template-columns:1fr}.cm-budget-controls{grid-template-columns:1fr}}',
       // ── dsh-pocket 手机端适配(task-10):双判据 —— @media (max-width:1023px) 覆盖真实窄屏,
       //    data-dsh-pocket-layout="mobile" 覆盖宽屏强制移动布局;两条判据都只新增覆盖,桌面不变。──

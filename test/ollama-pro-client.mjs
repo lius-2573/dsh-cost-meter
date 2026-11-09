@@ -90,6 +90,14 @@ const cellSub = (tree, label) => {
   return smalls.length > 1 ? text(smalls[1]) : ''
 }
 
+// 布局契约：只在 Ollama 的纯文字模式同排；右侧金额固定到第二列，
+// 百分比行自动占据第一列，避开 compact 模式已有的 grid-column:auto。
+const css = vm.runInNewContext(source.match(/const css = (\[[\s\S]*?\]\.join\('\\n'\))/)[1])
+assert.match(css, /\.text-only:not\(\.rail\) \.cm-mm\[data-cm-plan=ollama-cloud\]\{display:grid;grid-template-columns:minmax\(0,1fr\) auto\}/)
+assert.match(css, /\.text-only \[data-cm-plan=ollama-cloud\]>\.cm-mm-reset\{grid-area:2\/2;justify-self:end;text-align:right\}/)
+assert.match(css, /\.text-only \[data-cm-plan=ollama-cloud\]>\.cm-mm-row\{grid-row:2;justify-self:start\}/)
+assert.match(css, /\.text-only \[data-cm-plan=ollama-cloud\]>\.cm-mm-title\{grid-column:1\/-1\}/)
+
 // ── 1. 厂商行、双语字典与默认计费类 ─────────────────────────────────────────
 const row = ui.CODING_PLAN_ROWS.find(item => item.id === 'ollama-cloud')
 assert.ok(row, 'CODING_PLAN_ROWS 含额度适配器 ollama-cloud')

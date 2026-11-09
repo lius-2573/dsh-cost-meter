@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.63-ollama.1] - 2026-11-09
+
+- Ollama 纯文字侧边栏改为同一行：左侧月度百分比，右侧本月额度金额。保留标题、币种换算与悬停提示，其他厂商及图形模式不变。
+- In the text-only Ollama sidebar card, align the monthly percentage left and allowance amount right on the same row. Keep the title, currency conversion, tooltips and other providers/styles unchanged.
+
 ## [1.9.62-ollama.1] - 2026-11-09
 
 - Ollama 侧边栏在百分比之外显示官方“本月额度”上限，跟随当前显示币种及汇率换算；不硬编码 $60，不包含购买余额。

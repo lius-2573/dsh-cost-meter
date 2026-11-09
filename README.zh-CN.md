@@ -3,7 +3,7 @@
 <p align="center">DeepSeek Harness 费用统计与订阅额度插件</p>
 
 <p align="center">
-  <a href="https://github.com/lius-2573/dsh-cost-meter/tree/v1.9.62-ollama.1"><img src="https://img.shields.io/badge/version-1.9.62--ollama.1-4176E6?style=flat-square" alt="version"></a>
+  <a href="https://github.com/lius-2573/dsh-cost-meter/tree/v1.9.63-ollama.1"><img src="https://img.shields.io/badge/version-1.9.63--ollama.1-4176E6?style=flat-square" alt="version"></a>
   <a href="https://www.npmjs.com/package/dsh-cost-meter"><img src="https://img.shields.io/npm/dm/dsh-cost-meter?label=downloads&style=flat-square&color=4176E6" alt="npm monthly downloads"></a>
   <a href="https://github.com/Han-1413141/dsh-cost-meter/stargazers"><img src="https://img.shields.io/github/stars/Han-1413141/dsh-cost-meter?label=stars&style=flat-square&color=D9A400" alt="GitHub stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT license"></a>
@@ -26,7 +26,7 @@
 需要 **Node.js ≥ 20、DSH 0.2.0 或更新版本**，以及 DSH 可用的 pnpm。[宿主兼容记录](docs/host-compatibility.md)
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.62-ollama.1
+dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
 ```
 
 安装或更新后重启 `dsh web`。**Desktop** 使用应用自带 CLI 和 `desktop` Profile，见 [Desktop 安装与更新](docs/install-troubleshooting.md#desktop-安装与更新)。
@@ -37,20 +37,20 @@ dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.62-ollama.1
 PowerShell 脚本自动检查 pnpm 和 Git，默认安装到 `web` Profile：
 
 ```powershell
-irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.62-ollama.1/install.ps1 | iex
+irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.63-ollama.1/install.ps1 | iex
 ```
 
 固定 Git tag 安装：
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.62-ollama.1
+dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
 ```
 
 更新、卸载及无 Git 的安装方法见[安装说明](docs/install.md)。
 
 </details>
 
-Fork 版本 **v1.9.62-ollama.1**，基于上游 v1.9.60：[Ollama 接入说明](docs/ollama-pro.md) · [安装排障](docs/install-troubleshooting.md)。Git 安装命令需在 fork tag 推送后使用。
+Fork 版本 **v1.9.63-ollama.1**，基于上游 v1.9.60：[Ollama 接入说明](docs/ollama-pro.md) · [安装排障](docs/install-troubleshooting.md)。Git 安装命令需在 fork tag 推送后使用。
 
 ## 功能总览
 
