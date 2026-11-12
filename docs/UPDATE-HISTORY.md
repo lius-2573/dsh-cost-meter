@@ -1,5 +1,11 @@
 # dsh-cost-meter 版本更新历史
 
+## v1.9.65-ollama.1(2026-11-12)—— 本地整合上游 v1.9.64
+
+- 接入 Magpie 模型价格自动匹配、余额／额度修复及 OpenDesign 设备码授权。
+- 保留 Ollama 官方月度额度与用量、币种换算、纯文字百分比和月度上限同排。
+- 通过本地 tgz 更新；源码同步到个人功能分支，未创建新 tag 或发布 npm，不提供虚构的远程 tag。
+
 ## v1.9.63-ollama.1(2026-11-09)—— Ollama 纯文字额度同排
 
 - 月度百分比左对齐、本月额度右对齐，共用一行；保留标题及当前币种，不改变其他卡片和图形模式。
@@ -17,6 +23,40 @@
 - 失败保留上次成功数据，刷新遵守限流；暂不支持旧版套餐。
 
 [接入说明](ollama-pro.md) · [English](ollama-pro.en.md)
+
+## v1.9.64(2026-11-10)—— Magpie 模型价格自动匹配
+
+- 适配 Magpie 自带接入、dsh-magpie-connect、dsh-magpie-connector 和 @zhiqiangme/dsh-magpie，按模型 ID 中的来源前缀自动匹配价格。
+- 切换模型后使用对应单价，保留手动定价、渠道专属价格、免费模型及本地模型规则。
+- 同步前后端价格解析，补充实际连接插件目录和连续模型切换回归。
+
+[更新说明 / Release notes](update-notes-1.9.64.md)
+
+## v1.9.63(2026-11-10)—— 额度与余额来源修复
+
+- 优先读取 Antigravity 的 daily 端点，修复额度滞后，并补齐异常响应的回退处理。
+- 官方余额跟随模型 API Key，保留手动选择账号和专用余额凭据的优先级。切换凭据或服务地址时清除旧余额与对账基准。
+- 核验 dsh-codex-subscription 3.2.8、3.2.9 的实际发布包，将兼容基线更新至 3.2.9。
+
+[更新说明 / Release notes](update-notes-1.9.63.md)
+
+## v1.9.62(2026-11-09)—— 合并卡片峰谷进度条修复
+
+- 修复合并卡片模式下峰谷进度条过薄、高光被裁切的问题，实际侧栏与显示预览完整呈现进度条。
+- Fix the thin peak-period track and clipped highlight in the merged sidebar card and its display preview.
+
+感谢 [@ansel-open](https://github.com/ansel-open) 在 [#487](https://github.com/Han-1413141/dsh-cost-meter/issues/487) 报告问题，并提供复现步骤及侧栏、显示预览截图。
+
+[更新说明 / Release notes](update-notes-1.9.62.md)
+
+## v1.9.61(2026-11-09)—— OpenDesign 设备码授权
+
+- 在 OpenDesign 额度卡点击“一键获取额度凭据”，浏览器批准后保存控制面密钥、读取工作区并刷新额度。
+- 修复授权等待期间跨宿主切换账号或工作区，以及手工修改凭据与旧授权写入之间的竞态。
+- 补充取消提示和中英文、浅深色、窄屏交互验证。
+
+[更新说明](update-notes-1.9.61.md) · [配置说明](opendesign-billing.md)
+
 
 ## v1.9.60(2026-11-08)—— 本地模型费用折算与界面反馈修复
 

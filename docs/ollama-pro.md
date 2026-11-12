@@ -2,7 +2,7 @@
 
 [English](ollama-pro.en.md)
 
-本 fork 基于上游 v1.9.60。新增额度来源 ID 为 `ollama-cloud`，不与本地 `ollama` 推理来源混用。仅支持新版月度美元额度套餐；旧版 session/weekly 套餐会明确提示不支持，不显示虚构的零额度。
+本地 fork 已整合上游 v1.9.64，版本为 1.9.65-ollama.1。新增额度来源 ID 为 `ollama-cloud`，不与本地 `ollama` 推理来源混用。仅支持新版月度美元额度套餐；旧版 session/weekly 套餐会明确提示不支持，不显示虚构的零额度。
 
 ## 配置
 
@@ -24,12 +24,12 @@ Key 不写入账本、仓库或浏览器状态，只有宿主向固定的 `https
 
 ## 安装、同步与回滚
 
-Fork tag 推送后，可固定安装：
+源码维护在个人仓库的 `feature/ollama-quota` 分支，未发布新 tag 或 npm。当前部署使用已验证的本地包：
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+dsh plugin --profile web add ./dsh-cost-meter-1.9.65-ollama.1.tgz --ignore-scripts
 ```
 
-也可以通过 DSH 官方 CLI 安装经测试的本地 `.tgz` 包。安装后重启 DSH，并刷新原 GUI。恢复官方版本时使用 `dsh plugin --profile web add dsh-cost-meter@1.9.60`，再重启、刷新；必要时使用安装前的本地快照恢复配置，勿清空会话或账本。
+安装后重启 DSH，并刷新原 GUI。回滚使用更新前的 `dsh-cost-meter-1.9.63-ollama.1.tgz`，再重启、刷新。不要用官方 1.9.60 覆盖而丢失定制，也不要以旧快照覆盖持续增长的账本。配置快照仅在确有损坏时按需恢复。
 
 上游 remote 为 `upstream`，功能分支为 `feature/ollama-quota`。同步时先合并上游并运行构建／回归，审核后再更新安装版本；本次未创建定时同步任务，也未向上游提交 PR。

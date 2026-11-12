@@ -6,26 +6,26 @@
 .DESCRIPTION
   无需克隆仓库:经 dsh plugin 把插件装进指定 Profile，默认 web。
   Desktop 使用自带的 dsh 命令和 pnpm；先启动一次并完全退出 Desktop，再传入 -Profile desktop。
-   本 fork 未发布 npm，所有 Profile 都安装固定 Git tag（无 Git 时使用 tarball）。
+   本 fork 的 1.9.65-ollama.1 为未发布的本地更新，使用 -PackagePath 安装已验证的 tgz。
   需要装其它 rev 时用 -Rev 参数覆盖(如 CI 冒烟装被测提交):
-    - git 源固定到 tag:  github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+    - 只有显式传入 -Rev 时才使用 fork Git / tarball；本地更新不创建远程 tag。
    - 无 git 时用 tag 打包直链(内容与 tag 一一对应)
    - pnpm 固定版本:     11.21.0(corepack prepare / npm i -g pnpm@11.21.0)
-  已安装时重跑本脚本即可对齐到当前脚本固定的版本。
+   已安装时传入已验证的 -PackagePath 或经过审核的 -Rev 再运行。
 
   一键用法(复制整行到 PowerShell 粘贴回车;先审阅再运行):
-    irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.63-ollama.1/install.ps1 | iex
+    .\install.ps1 -PackagePath .\dsh-cost-meter-1.9.65-ollama.1.tgz
 
   手动用法(先下载本文件审阅):
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Profile desktop
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -PackagePath .\dsh-cost-meter-1.9.65-ollama.1.tgz
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Profile desktop -PackagePath .\dsh-cost-meter-1.9.65-ollama.1.tgz
 #>
 [CmdletBinding()]
 param(
   [string]$Profile = 'web',
-  # 安装 rev 覆盖(固定 tag 或 commit SHA)。缺省用脚本内固定发布 tag;
-  # CI 冒烟用它安装被测提交(发版链刚合入、固定 tag 尚未推送的窗口期)。
-  [string]$Rev = ''
+  # 显式指定经过审核的 commit、已存在的 tag 或分支；未提供时须使用 PackagePath。
+  [string]$Rev = '',
+  [string]$PackagePath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -33,7 +33,9 @@ $ErrorActionPreference = 'Stop'
 $Package      = 'dsh-cost-meter'
 $Owner        = 'lius-2573'
 $Repo         = 'dsh-cost-meter'
-$PinnedRev    = 'v1.9.63-ollama.1'   # 固定 fork tag，未发布到 npm。
+$PinnedRev    = 'v1.9.65-ollama.1'   # 版本标识；源码已同步个人分支，无对应新 tag 或 npm 发布。
+if (-not $Rev -and -not $PackagePath) { throw 'This local build is unpublished. Supply -PackagePath with the verified tgz, or an explicit existing -Rev.' }
+if ($Rev -and $PackagePath) { throw 'Choose either -Rev or -PackagePath, not both.' }
 $InstallRev   = if ($Rev) { $Rev } else { $PinnedRev }
 $PnpmVersion  = '11.21.0'   # 固定 pnpm 版本,保证安装链可复现
 $GitSpec = "github:$Owner/$Repo#$InstallRev"
@@ -78,13 +80,18 @@ if ($Profile -ne 'desktop' -and -not (Has 'pnpm')) {
   Ok "pnpm 就绪: $((Get-Command pnpm).Source)"
 }
 
-# 2. 此 fork 未发布 npm；全部 Profile 固定安装 Git / tarball 来源。
+# 2. 此 fork 未发布 npm；优先使用已验证的本地包，或显式指定 Git / tarball 来源。
 # 显式 -Rev 可指定被测 commit 或 fork tag。
 $useGit = Has 'git'
 if (-not $useGit -and ($Profile -ne 'desktop' -or $Rev)) {
   Info "未检测到 git,改用 GitHub 发布包($InstallRev 打包直链)安装"
 }
 $spec = if ($useGit) { $GitSpec } else { $TarSpec }
+if ($PackagePath) {
+  $spec = (Resolve-Path -LiteralPath $PackagePath -ErrorAction Stop).Path
+  if (-not (Test-Path -LiteralPath $spec -PathType Leaf) -or -not $spec.EndsWith('.tgz')) { Fail 'PackagePath must be a verified local .tgz file.' }
+  $InstallRev = "$PinnedRev (local package)"
+}
 
 # 3. 探测是否已装(profile 的 dependencies 里已有本包)
 $dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFILE '.dsh' }
@@ -120,11 +127,11 @@ if ($devLink) {
 # 4. 安装或更新(更新 = 按本脚本固定的 $InstallRev 重新 add,保证只装到固定版本)
 if ($installed) {
   Info "已安装,重新 add 以对齐版本 $InstallRev ..."
-  dsh plugin --profile $Profile add $spec
+  dsh plugin --profile $Profile add $spec --ignore-scripts
   if ($LASTEXITCODE -ne 0) { Fail "add 失败(见上方输出)" }
 } else {
   Info "安装来源: $spec"
-  dsh plugin --profile $Profile add $spec
+  dsh plugin --profile $Profile add $spec --ignore-scripts
   if ($LASTEXITCODE -ne 0) { Fail "add 失败(见上方输出)" }
 }
 

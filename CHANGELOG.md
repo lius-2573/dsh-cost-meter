@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.65-ollama.1] - 2026-11-12
+
+- 本地整合上游 v1.9.64（c876735）：接入 Magpie 自动价格匹配、官方余额来源隔离、Antigravity 额度及峰谷卡片修复、OpenDesign 设备码授权。
+- 保留三个 Ollama 定制提交：新版月度额度／官方用量、显示币种换算，以及纯文字模式百分比与本月额度同排。
+- 通过本地安装包完成部署；源码按用户要求同步到个人仓库的 feature/ollama-quota 分支，未创建新 tag 或发布 npm。不要使用不存在的远程 tag 或官方 npm 包替代此构建。
+- Integrate upstream v1.9.64 while retaining all Ollama quota, currency and one-row sidebar customizations. This is an unpublished local build installed from a verified archive.
+
 ## [1.9.63-ollama.1] - 2026-11-09
 
 - Ollama 纯文字侧边栏改为同一行：左侧月度百分比，右侧本月额度金额。保留标题、币种换算与悬停提示，其他厂商及图形模式不变。
@@ -21,6 +28,53 @@
 - Add new Ollama Pro monthly credits, purchased balance, reset dates, and official 24h / 7d / 30d account usage. Keep credentials private, preserve last-good results, respect rate limits, and leave session billing unchanged. Legacy plans are not supported by this fork addition.
 
 [说明 / Guide](docs/ollama-pro.md) · [English](docs/ollama-pro.en.md)
+
+## [1.9.64] - 2026-11-10
+
+- 适配 Magpie 自带接入、dsh-magpie-connect、dsh-magpie-connector 和 @zhiqiangme/dsh-magpie，按模型 ID 中的来源前缀自动匹配价格。
+- 切换模型后使用对应单价，保留手动定价、渠道专属价格、免费模型及本地模型规则。
+- 同步前后端价格解析，补充实际连接插件目录和连续模型切换回归。
+
+- Match account-prefixed model IDs from Magpie and the dsh-magpie-connect, dsh-magpie-connector and @zhiqiangme/dsh-magpie integrations.
+- Select the corresponding price after model switches while preserving manual assignments, source-specific rates, free variants and local-model rules.
+- Keep host and client matching consistent and cover published connector catalogs and consecutive model switches.
+
+[更新说明 / Release notes](docs/update-notes-1.9.64.md)
+
+## [1.9.63] - 2026-11-10
+
+- 优先读取 Antigravity 的 daily 端点，修复额度滞后，并补齐异常响应的回退处理。
+- 官方余额跟随模型 API Key，保留手动选择账号和专用余额凭据的优先级。切换凭据或服务地址时清除旧余额与对账基准。
+- 核验 dsh-codex-subscription 3.2.8、3.2.9 的实际发布包，将兼容基线更新至 3.2.9。
+
+- Fix stale Antigravity quotas by prioritizing the daily endpoint and handling invalid responses during fallback.
+- Read the official balance using the model API key, while preserving explicit balance-account and dedicated-key priority. Clear cached balances and reconciliation references when credentials or endpoints change.
+- Verify the published dsh-codex-subscription 3.2.8 and 3.2.9 packages and update the compatibility baseline to 3.2.9.
+
+感谢 [@wegret](https://github.com/wegret) 在 [#489](https://github.com/Han-1413141/dsh-cost-meter/issues/489) 提供额度对比截图，并在 [#492](https://github.com/Han-1413141/dsh-cost-meter/pull/492) 调整 Antigravity 端点顺序。感谢 [@RikkaCode](https://github.com/RikkaCode) 在 [#493](https://github.com/Han-1413141/dsh-cost-meter/issues/493) 报告余额来源问题，并在 [#494](https://github.com/Han-1413141/dsh-cost-meter/pull/494) 修正查询优先级、补充文档和测试。
+
+[更新说明 / Release notes](docs/update-notes-1.9.63.md)
+
+## [1.9.62] - 2026-11-09
+
+- 修复合并卡片模式下峰谷进度条过薄、高光被裁切的问题，实际侧栏与显示预览完整呈现进度条。
+- Fix the thin peak-period track and clipped highlight in the merged sidebar card and its display preview.
+
+感谢 [@ansel-open](https://github.com/ansel-open) 在 [#487](https://github.com/Han-1413141/dsh-cost-meter/issues/487) 报告问题，并提供复现步骤及侧栏、显示预览截图。
+
+[更新说明 / Release notes](docs/update-notes-1.9.62.md)
+
+## [1.9.61] - 2026-11-09
+
+- OpenDesign 额度卡新增“一键获取额度凭据”，通过浏览器设备码授权取得控制面密钥，保存后读取工作区并刷新额度。
+- 授权绑定发起时的查询账号与工作区设置，修复多宿主切换账号、配置变更及手工保存或清除凭据时的并发写入问题。
+- 补充 OpenDesign 取消提示，以及中英文、浅深色和窄屏的按钮交互验证。
+- Add OpenDesign device authorization, workspace lookup and immediate quota refresh. Bind authorization to its starting account and workspace, and serialize credential writes so later manual saves or clears take effect in order.
+
+感谢 [@Lu2O3GaN](https://github.com/Lu2O3GaN) 在 [#485](https://github.com/Han-1413141/dsh-cost-meter/pull/485) 提供设备码授权流程、额度按钮、文档与初始回归测试。
+
+[更新说明 / Release notes](docs/update-notes-1.9.61.md)
+
 
 ## [1.9.60] - 2026-11-08
 

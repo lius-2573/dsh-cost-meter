@@ -8,7 +8,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 assert.ok(process.env.DSH_TEST_NODE_MODULES, 'set DSH_TEST_NODE_MODULES to the actual host dependencies')
 const req = createRequire(join(resolve(process.env.DSH_TEST_NODE_MODULES), '__ollama_host.cjs'))
-const repo = fileURLToPath(new URL('../', import.meta.url)), cwd = process.cwd()
+// Reuse the same synthetic host fixture against the exact packed/installed artifact.
+const repo = process.env.DSH_TEST_PACKAGE_DIR ? resolve(process.env.DSH_TEST_PACKAGE_DIR) : fileURLToPath(new URL('../', import.meta.url)), cwd = process.cwd()
 const work = mkdtempSync(join(tmpdir(), 'cm-ollama-runtime-'))
 const names = ['DSH_HOME', 'USERPROFILE', 'HOME', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'OLLAMA_API_KEY']
 const saved = Object.fromEntries(names.map(name => [name, process.env[name]])), realFetch = globalThis.fetch
@@ -33,6 +34,17 @@ try {
   const anchor = pathToFileURL(join(work, 'package.json')).href
   host = new Context(); host.baseUrl = anchor
   host.logger = { error: error => errors.push(String(error)), warn() {}, info() {} }
+  if (process.env.DSH_TEST_PROFILE_DIR) {
+    // Packed profiles deliberately omit host peers. Match the real launcher rather
+    // than adding duplicate DSH packages to the tested installation.
+    const { PluginPackages, createRuntimeResolution, loadProfileDirectory } = await imp('@deepseek-ai/dsh-app-boot')
+    const profileDir = resolve(process.env.DSH_TEST_PROFILE_DIR)
+    const installAnchor = req.resolve('@deepseek-ai/dsh/package.json')
+    const profile = loadProfileDirectory('ollama-runtime-test', profileDir, installAnchor, { userLayer: false })
+    assert.deepEqual(profile.skippedBundles, [])
+    const resolution = await createRuntimeResolution({ installAnchor, profile, home: dirname(dirname(profileDir)) })
+    await host.plugin(PluginPackages, { resolution }).await()
+  }
   const lifetime = new AbortController()
   peer = { id: 'cm-ollama-owner', ctx: host, principal: { kind: 'owner' }, signal: lifetime.signal, interactions: 'none', dispose: async () => lifetime.abort() }
   const invoke = (method, args = {}) => host.typertGateway.invoke({ namespace: 'costMeter', method, args, ...(RemoteAccess ? { peer } : {}) })
@@ -53,7 +65,7 @@ try {
   if (RemoteAccess) await host.plugin(RemoteAccess).await()
   await host.plugin(Gateway, {}).await()
   await host.loader.root.update([{ id: 'cost-meter', name: pathToFileURL(join(repo, 'lib/index.js')).href }]); await host.loader.await()
-  assert.ok(host.typert.getPackage('dsh-cost-meter'))
+  assert.ok(host.typert.getPackage('dsh-cost-meter'), 'costMeter failed to register: ' + errors.join('\n'))
   const initial = await invoke('getState')
   assert.equal(initial.codingPlans['ollama-cloud'].enabled, false); assert.equal(calls.length, 0)
   assert.equal((await invoke('setCredential', { target: 'codingPlans.ollama-cloud', value: token })).ok, true)

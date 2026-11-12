@@ -3,7 +3,7 @@
 <p align="center">Cost tracking and subscription quotas for DeepSeek Harness</p>
 
 <p align="center">
-  <a href="https://github.com/lius-2573/dsh-cost-meter/tree/v1.9.63-ollama.1"><img src="https://img.shields.io/badge/version-1.9.63--ollama.1-4176E6?style=flat-square" alt="version"></a>
+  <a href="docs/ollama-pro.en.md"><img src="https://img.shields.io/badge/version-1.9.65--ollama.1-4176E6?style=flat-square" alt="version (local build)"></a>
   <a href="https://www.npmjs.com/package/dsh-cost-meter"><img src="https://img.shields.io/npm/dm/dsh-cost-meter?label=downloads&style=flat-square&color=4176E6" alt="npm monthly downloads"></a>
   <a href="https://github.com/Han-1413141/dsh-cost-meter/stargazers"><img src="https://img.shields.io/github/stars/Han-1413141/dsh-cost-meter?label=stars&style=flat-square&color=D9A400" alt="GitHub stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT license"></a>
@@ -14,19 +14,26 @@
 
 Track costs and tokens by conversation, model and call. View account balances, subscription quotas and budgets together, with separate API charges and Plan equivalents, multi-provider pricing, peak/off-peak alerts, and configurable sidebar and composer displays.
 
-This fork adds **new Ollama Pro monthly-credit plans** to upstream v1.9.60. See the [Ollama guide](docs/ollama-pro.en.md). It is not published to npm; installing the official npm package removes this addition.
+This fork combines upstream v1.9.64 with **new Ollama Pro monthly-credit plans**, currency-aware allowances and the one-row text sidebar. See the [Ollama guide](docs/ollama-pro.en.md). Source is maintained on this fork's `feature/ollama-quota` branch. Version 1.9.65-ollama.1 has no npm release or remote tag; the deployed archive was built and verified locally. Installing the official npm package removes these additions.
 
 <p align="center">
   <img src="docs/promo.en.png" alt="Whale-themed project illustration" width="1280">
   <br><sub>Project illustration</sub>
 </p>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/conversation-dark.png">
+  <img src="docs/images/conversation-light.png" alt="Full conversation view with costs, subscription quotas and account balance" width="1280">
+</picture>
+
+<p align="center"><sub>Full conversation view in light or dark mode to match your theme. Screenshots use example data.</sub></p>
+
 ## Installation
 
 Requires **Node.js ≥ 20, DSH 0.2.0 or later**, and pnpm available to DSH. See [host compatibility](docs/host-compatibility.md).
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+dsh plugin --profile web add ./dsh-cost-meter-1.9.65-ollama.1.tgz --ignore-scripts
 ```
 
 Restart `dsh web` after installation or updates. **Desktop** uses its bundled CLI and the `desktop` profile; follow the [Desktop guide](docs/install-troubleshooting.md#desktop-安装与更新).
@@ -37,20 +44,20 @@ Restart `dsh web` after installation or updates. **Desktop** uses its bundled CL
 The PowerShell installer checks pnpm and Git and uses the `web` profile by default:
 
 ```powershell
-irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.63-ollama.1/install.ps1 | iex
+.\install.ps1 -PackagePath .\dsh-cost-meter-1.9.65-ollama.1.tgz
 ```
 
-Install a pinned Git tag:
+This local build has no remote tag. Install the verified local archive:
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+dsh plugin --profile web add ./dsh-cost-meter-1.9.65-ollama.1.tgz --ignore-scripts
 ```
 
 See [installation and updates](docs/install.en.md) for uninstalling or installing without Git.
 
 </details>
 
-Fork version **v1.9.63-ollama.1**, based on upstream v1.9.60: [Ollama guide](docs/ollama-pro.en.md) · [troubleshooting](docs/install-troubleshooting.md). Git installation requires the fork tag to have been pushed.
+Fork **v1.9.65-ollama.1**, based on upstream v1.9.64: [upstream release notes](docs/update-notes-1.9.64.md#english) · [Ollama guide](docs/ollama-pro.en.md). The source branch is available; no release tag or npm package has been published. Use a verified local archive or an explicitly reviewed commit.
 
 ## Feature overview
 

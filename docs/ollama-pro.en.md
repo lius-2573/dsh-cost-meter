@@ -2,7 +2,7 @@
 
 [简体中文](ollama-pro.md)
 
-This fork builds on upstream v1.9.60. Its quota source ID is `ollama-cloud`, separate from local `ollama` inference. It supports only new monthly USD-credit plans. Legacy session/weekly plans produce an explicit unsupported-plan message, not invented zero balances.
+This local fork integrates upstream v1.9.64 as version 1.9.65-ollama.1. Its quota source ID is `ollama-cloud`, separate from local `ollama` inference. It supports only new monthly USD-credit plans. Legacy session/weekly plans produce an explicit unsupported-plan message, not invented zero balances.
 
 ## Setup
 
@@ -24,12 +24,12 @@ Keys stay in the DSH credential store, never the ledger, repository, or browser 
 
 ## Installation and maintenance
 
-After the fork tag is pushed:
+Source is maintained on this fork's `feature/ollama-quota` branch, without a new release tag or npm publication. The current deployment uses this verified local archive:
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+dsh plugin --profile web add ./dsh-cost-meter-1.9.65-ollama.1.tgz --ignore-scripts
 ```
 
-A tested local `.tgz` package can also be installed using the official DSH CLI. Restart DSH and refresh the existing GUI. To roll back, install `dsh-cost-meter@1.9.60`, restart, and refresh; restore the pre-install snapshot if configuration recovery is needed. Never clear session history or the ledger.
+Restart DSH and refresh the existing GUI. To roll back, install the pre-update `dsh-cost-meter-1.9.63-ollama.1.tgz`, restart, and refresh. Do not replace it with official 1.9.60 and lose the customizations. Never restore an old ledger over newer activity; restore individual configuration fields only if required.
 
 The upstream remote is `upstream`; the feature branch is `feature/ollama-quota`. Merge upstream updates, build and test, then review before deploying a new pinned version. No scheduled synchronization or upstream pull request is created by this addition.

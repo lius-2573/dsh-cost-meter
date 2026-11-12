@@ -3,7 +3,7 @@
 <p align="center">DeepSeek Harness 费用统计与订阅额度插件</p>
 
 <p align="center">
-  <a href="https://github.com/lius-2573/dsh-cost-meter/tree/v1.9.63-ollama.1"><img src="https://img.shields.io/badge/version-1.9.63--ollama.1-4176E6?style=flat-square" alt="version"></a>
+  <a href="docs/ollama-pro.md"><img src="https://img.shields.io/badge/version-1.9.65--ollama.1-4176E6?style=flat-square" alt="version (local build)"></a>
   <a href="https://www.npmjs.com/package/dsh-cost-meter"><img src="https://img.shields.io/npm/dm/dsh-cost-meter?label=downloads&style=flat-square&color=4176E6" alt="npm monthly downloads"></a>
   <a href="https://github.com/Han-1413141/dsh-cost-meter/stargazers"><img src="https://img.shields.io/github/stars/Han-1413141/dsh-cost-meter?label=stars&style=flat-square&color=D9A400" alt="GitHub stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT license"></a>
@@ -14,19 +14,26 @@
 
 按会话、模型和调用查看费用与 Token 用量，集中显示账户余额、套餐额度和预算。支持 API 费用与 Plan 等值费用分开统计、多厂商定价、峰谷提醒，以及侧栏和输入区的独立显示设置。
 
-本 fork 基于上游 v1.9.60，增加 **新版 Ollama Pro 月度额度套餐**展示，见[接入说明](docs/ollama-pro.md)。本版本不发布到 npm，安装官方 npm 包会覆盖这项功能。
+本 fork 整合上游 v1.9.64，保留 **新版 Ollama Pro 月度额度套餐**、额度币种换算及纯文字同排展示，见[接入说明](docs/ollama-pro.md)。源码维护在个人仓库的 `feature/ollama-quota` 分支；1.9.65-ollama.1 未发布 npm 或远程 tag，现有部署使用本地构建、验证的安装包。安装官方 npm 包会覆盖这些定制。
 
 <p align="center">
   <img src="docs/promo.png" alt="鲸鱼主题项目宣传图" width="1280">
   <br><sub>项目宣传图</sub>
 </p>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/conversation-dark.png">
+  <img src="docs/images/conversation-light.png" alt="完整会话界面，包含会话费用、套餐额度与账户余额" width="1280">
+</picture>
+
+<p align="center"><sub>完整会话界面，随主题切换浅色与深色。截图使用示例数据。</sub></p>
+
 ## 安装
 
 需要 **Node.js ≥ 20、DSH 0.2.0 或更新版本**，以及 DSH 可用的 pnpm。[宿主兼容记录](docs/host-compatibility.md)
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+dsh plugin --profile web add ./dsh-cost-meter-1.9.65-ollama.1.tgz --ignore-scripts
 ```
 
 安装或更新后重启 `dsh web`。**Desktop** 使用应用自带 CLI 和 `desktop` Profile，见 [Desktop 安装与更新](docs/install-troubleshooting.md#desktop-安装与更新)。
@@ -37,20 +44,20 @@ dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
 PowerShell 脚本自动检查 pnpm 和 Git，默认安装到 `web` Profile：
 
 ```powershell
-irm https://raw.githubusercontent.com/lius-2573/dsh-cost-meter/v1.9.63-ollama.1/install.ps1 | iex
+.\install.ps1 -PackagePath .\dsh-cost-meter-1.9.65-ollama.1.tgz
 ```
 
-固定 Git tag 安装：
+本地版没有远程 tag，使用已验证的本地安装包：
 
 ```sh
-dsh plugin --profile web add github:lius-2573/dsh-cost-meter#v1.9.63-ollama.1
+dsh plugin --profile web add ./dsh-cost-meter-1.9.65-ollama.1.tgz --ignore-scripts
 ```
 
 更新、卸载及无 Git 的安装方法见[安装说明](docs/install.md)。
 
 </details>
 
-Fork 版本 **v1.9.63-ollama.1**，基于上游 v1.9.60：[Ollama 接入说明](docs/ollama-pro.md) · [安装排障](docs/install-troubleshooting.md)。Git 安装命令需在 fork tag 推送后使用。
+Fork **v1.9.65-ollama.1**，基于上游 v1.9.64：[上游更新说明](docs/update-notes-1.9.64.md#中文) · [Ollama 接入说明](docs/ollama-pro.md)。源码分支可用，尚无新 release tag 或 npm 发布；使用已验证的本地包，或显式指定经过审核的 commit。
 
 ## 功能总览
 
